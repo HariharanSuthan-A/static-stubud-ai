@@ -585,62 +585,76 @@ async function callGeminiAPI(question, markType) {
     apiUsage.rpdCount++;
     
     // Determine token output based on mark type
-    const outputTokens = markType === "2" ? 300 : markType === "13" ? 1200 : markType === "15" ? 1500;
+    const outputTokens = markType === "2" ? 300 : markType === "13" ? 800 : 1200;
     
-    // Construct the formatted prompt for Anna University answers
-    const systemPrompt = `
-    You are an expert assistant for Anna University students. Generate comprehensive, well‑structured answers tailored to the specified mark format.
-	markType === "2
-	Please provide a concise answer suitable for a 2-mark question with these requirements:
-	- **Key Insights**: Focus on the most critical 1-2 concepts
-	- **Essential Points**: Maximum 2-3 sentences with precise definitions
-	- **Format**: Direct, to-the-point explanation
-	- **Content**: Include key terms, definitions, and core concepts
-	- **Structure**: Brief but complete answer that covers the question fully
+    // Base prompt structure for Anna University
+    const basePrompt = `You are an expert assistant for Anna University students. Generate a comprehensive, well-structured answer with key insights and essential points for the following question in the ${markType}-mark format.`;
+    
+    // Mark-specific prompts
+    let markSpecificPrompt = '';
+    switch(markType) {
+        case "2":
+            markSpecificPrompt = `
+Please provide a concise answer suitable for a 2-mark question with these requirements:
+- **Key Insights**: Focus on the most critical 1-2 concepts
+- **Essential Points**: Maximum 2-3 sentences with precise definitions
+- **Format**: Direct, to-the-point explanation
+- **Content**: Include key terms, definitions, and core concepts
+- **Structure**: Brief but complete answer that covers the question fully
 
-	Ensure the answer contains the most important information a student needs to score full marks.
+Ensure the answer contains the most important information a student needs to score full marks.`;
+            break;
+        case "13":
+            markSpecificPrompt = `
+Please provide a detailed answer suitable for a 13-mark question with these requirements:
+- **Key Insights**: Identify and explain 4-5 major concepts or points
+- **Essential Points**: Include introduction, main content with subheadings, and conclusion
+- **Structure**: Use proper headings, bullet points, and clear organization
+- **Content**: Step-by-step explanations, relevant examples, and practical applications
+- **Critical Elements**: Include advantages, disadvantages, and real-world relevance
+- **Visual Aids**: Suggest diagrams or flowcharts where applicable
+- **Anna University Standards**: Follow exam pattern and marking scheme
 
-Answer:`;.
+Focus on providing comprehensive coverage while highlighting the most important aspects that examiners look for.`;
+            break;
+        case "15":
+            markSpecificPrompt = `
+Please provide a comprehensive answer suitable for a 15-mark question with these requirements:
+- **Key Insights**: Develop 6-8 major concepts with deep analysis
+- **Essential Points**: Detailed introduction, multiple well-structured sections, comprehensive conclusion
+- **Structure**: Clear headings, subheadings, numbered points, and logical flow
+- **Content**: In-depth explanations, multiple examples, case studies, and comparative analysis
+- **Critical Analysis**: Include advantages, disadvantages, applications, limitations, and future scope
+- **Technical Details**: Mathematical formulations, algorithms, or technical specifications where relevant
+- **Visual Elements**: Suggest multiple diagrams, flowcharts, tables, or graphs
+- **Real-world Application**: Include industry examples, current trends, and practical implementations
+- **Conclusion**: Summarize key takeaways and important points for easy revision
 
-	markType === "13"
-	Please provide a detailed answer suitable for a 13-mark question with these requirements:
-	- **Key Insights**: Identify and explain 4-5 major concepts or points
-	- **Essential Points**: Include introduction, main content with subheadings, and conclusion
-	- **Structure**: Use proper headings, bullet points, and clear organization
-	- **Content**: Step-by-step explanations, relevant examples, and practical applications
-	- **Critical Elements**: Include advantages, disadvantages, and real-world relevance
-	- **Visual Aids**: Suggest diagrams or flowcharts where applicable
-	- **Anna University Standards**: Follow exam pattern and marking scheme
+Provide university-level depth while ensuring all critical points are covered for maximum marks.`;
+            break;
+    }
 
-	Focus on providing comprehensive coverage while highlighting the most important aspects that examiners look for.
-
-Answer:`;
-
-	markType === "15"
-	Please provide a comprehensive answer suitable for a 15-mark question with these requirements:
-	- **Key Insights**: Develop 6-8 major concepts with deep analysis
-	- **Essential Points**: Detailed introduction, multiple well-structured sections, comprehensive conclusion
-	- **Structure**: Clear headings, subheadings, numbered points, and logical flow
-	- **Content**: In-depth explanations, multiple examples, case studies, and comparative analysis
-	- **Critical Analysis**: Include advantages, disadvantages, applications, limitations, and future scope
-	- **Technical Details**: Mathematical formulations, algorithms, or technical specifications where relevant
-	- **Visual Elements**: Suggest multiple diagrams, flowcharts, tables, or graphs
-	- **Real-world Application**: Include industry examples, current trends, and practical implementations
-	- **Conclusion**: Summarize key takeaways and important points for easy revision
-
-	Provide university-level depth while ensuring all critical points are covered for maximum marks.
-
-
-	Always adhere to Anna University’s exam pattern and marking scheme :contentReference[oaicite:1]{index=1}.
-
-Answer: `;
+    const systemPrompt = `${basePrompt}
+    
+    **Answer Requirements for ${markType}-mark question:**
+    ${markSpecificPrompt}
+    
+    **Formatting Guidelines:**
+    1. Use **bold** for key terms and concepts
+    2. Use ## for section headings
+    3. Structure based on mark weightage
+    4. Include examples where relevant
+    5. Use bullet points for lists
+    6. Add diagrams in code format when applicable (\`\`\` diagram description \`\`\`)
+    
+    **Current Question:** "${question}"
+    **Mark Weightage:** ${markType} marks
+    `;
 
     const requestBody = {
         contents: [{
             parts: [
-                { text: systemPrompt },
-                { text: `**Current Question:** "${question}"` },
-                { text: `**Mark Weightage:** ${markType} marks` }
+                { text: systemPrompt }
             ]
         }],
         generationConfig: {
@@ -699,7 +713,7 @@ Answer: `;
         console.error("Error calling Gemini API:", error);
         throw error;
     }
-
+}
       
             // Update usage display
             updateApiUsageDisplay();
