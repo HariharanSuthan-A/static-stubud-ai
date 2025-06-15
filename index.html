@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stubud AI - Academic Answer Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        gemini: {
+                            100: '#e8f0fe',
+                            200: '#d2e3fc',
+                            300: '#aecbfa',
+                            400: '#8ab4f8',
+                            500: '#4285f4',
+                            600: '#1a73e8',
+                            700: '#1967d2',
+                            800: '#185abc',
+                            900: '#174ea6',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'ripple': 'ripple 0.6s linear',
+                    },
+                    keyframes: {
+                        ripple: {
+                            '0%': { transform: 'scale(0)', opacity: '1' },
+                            '100%': { transform: 'scale(4)', opacity: '0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            transition: background-color 0.3s ease;
+        }
+        
+        .dark body {
+            background-color: #111827;
+        }
+        
+        .markdown-content h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: #1e293b;
+        }
+        
+        .dark .markdown-content h2 {
+            color: #f1f5f9;
+        }
+        
+        .markdown-content p {
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+        
+        .markdown-content ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-content strong {
+            font-weight: 600;
+            color: #0c4a6e;
+        }
+        
+        .dark .markdown-content strong {
+            color: #7dd3fc;
+        }
+        
+        .markdown-content code {
+            background-color: #e2e8f0;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+        
+        .dark .markdown-content code {
+            background-color: #334155;
+            color: '#f8fafc';
+        }
+        
+        .key-point {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+        
+        .dark .key-point {
+            background-color: #1e293b;
+            border-left-color: #60a5fa;
+        }
+        
+        .ad-container {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border: 1px dashed #7dd3fc;
+            border-radius: 0.75rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #0369a1;
+            font-weight: 500;
+        }
+        
+        .dark .ad-container {
+            background: linear-gradient(135deg, #0c4a6e, #075985);
+            border-color: #0284c7;
+            color: #bae6fd;
+        }
+        
+        .floating-btn {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
+        }
+        
+        .floating-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.7);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+        }
+        
+        .answer-canvas {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+        
+        .gemini-badge {
+            background: linear-gradient(to right, #4285f4, #34a853, #fbbc05, #ea4335);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 600;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #0ea5e9;
+            margin: 0 3px;
+            display: inline-block;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        
+        .typing-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.6); }
+            40% { transform: scale(1); }
+        }
+        
+        .api-usage-bar {
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .usage-progress {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+        
+        .usage-card {
+            transition: all 0.3s ease;
+        }
+        
+        .usage-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark .usage-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900">
+    <!-- Top Navigation Bar -->
+    <nav class="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md py-4 px-4 md:px-8 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <div class="bg-primary-500 rounded-lg p-2">
+                <i class="fas fa-graduation-cap text-white text-xl"></i>
+            </div>
+            <h1 class="text-xl font-bold text-gray-800 dark:text-white">Stubud AI</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full gemini-badge">
+                Powered by Gemini Flash 2.0
+            </span>
+            <button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:block"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- API Usage Status Bar -->
+    <div class="bg-gradient-to-r from-gemini-100 to-gemini-200 dark:from-gemini-800 dark:to-gemini-900 px-4 py-2">
+        <div class="container mx-auto">
+            <div class="flex justify-between items-center">
+                <div class="text-xs font-medium text-gray-800 dark:text-gray-200">
+                    <i class="fas fa-chart-line mr-1"></i> API Usage Status
+                </div>
+                <div class="flex space-x-4">
+                    <div class="flex items-center">
+                        <span class="text-xs font-medium text-gray-700 dark:text-gray-300 mr-2">RPM:</span>
+                        <span class="text-xs font-bold text-gray-800 dark:text-white">
+                            <span id="rpm-used">0</span>/<span>28</span>
+                        </span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-xs font-medium text-gray-700 dark:text-gray-300 mr-2">Tokens:</span>
+                        <span class="text-xs font-bold text-gray-800 dark:text-white">
+                            <span id="tokens-used">0</span>/<span>80,000</span>
+                        </span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-xs font-medium text-gray-700 dark:text-gray-300 mr-2">RPD:</span>
+                        <span class="text-xs font-bold text-gray-800 dark:text-white">
+                            <span id="rpd-used">0</span>/<span>1,400</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-1 flex space-x-1">
+                <div class="api-usage-bar flex-1 bg-gray-200 dark:bg-gray-700">
+                    <div id="rpm-progress" class="usage-progress bg-primary-500" style="width: 0%"></div>
+                </div>
+                <div class="api-usage-bar flex-1 bg-gray-200 dark:bg-gray-700">
+                    <div id="tokens-progress" class="usage-progress bg-green-500" style="width: 0%"></div>
+                </div>
+                <div class="api-usage-bar flex-1 bg-gray-200 dark:bg-gray-700">
+                    <div id="rpd-progress" class="usage-progress bg-purple-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Banner Ad -->
+    <div class="w-full px-4 py-3">
+        <div class="ad-container h-24">
+            <p>Advertisement Space (728x90)</p>
+        </div>
+    </div>
+
+    <main class="container mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left Column: Input Section -->
+            <div class="lg:col-span-5">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-all duration-300">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">Generate Academic Answers</h2>
+                    
+                    <div class="space-y-6">
+                        <!-- Mark Format Selection -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Answer Type</label>
+                            <div class="grid grid-cols-3 gap-3">
+                                <button class="mark-option py-3 px-4 rounded-lg border border-gray-300 dark:border-gray-600 text-center font-medium transition-all duration-200 hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-gray-700" data-mark="2">
+                                    2 Marks
+                                </button>
+                                <button class="mark-option py-3 px-4 rounded-lg border border-gray-300 dark:border-gray-600 text-center font-medium transition-all duration-200 hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-gray-700" data-mark="13">
+                                    13 Marks
+                                </button>
+                                <button class="mark-option py-3 px-4 rounded-lg border border-primary-500 text-center font-medium bg-primary-50 dark:bg-gray-700 transition-all duration-200" data-mark="15">
+                                    15 Marks
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Question Input -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Enter Your Question</label>
+                            <div class="relative">
+                                <textarea id="question-input" rows="4" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white transition-all duration-200" placeholder="Enter your question here..."></textarea>
+                                <div class="absolute bottom-3 right-3 text-gray-400">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Generate Button -->
+                        <div class="pt-2">
+                            <button id="generate-btn" class="w-full py-3 px-6 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg flex items-center justify-center transition-all duration-300 relative overflow-hidden">
+                                <span id="generate-text">Generate Answer</span>
+                                <span id="loading-spinner" class="ml-2 hidden">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- API Usage Details -->
+                <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">API Usage Details</h3>
+                    <div class="space-y-4">
+                        <div class="usage-card bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-medium text-gray-700 dark:text-gray-300">Requests per Minute (RPM)</span>
+                                <span class="font-semibold"><span id="detail-rpm-used">0</span>/28</span>
+                            </div>
+                            <div class="api-usage-bar bg-gray-200 dark:bg-gray-600">
+                                <div id="detail-rpm-progress" class="usage-progress bg-primary-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="usage-card bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-medium text-gray-700 dark:text-gray-300">Tokens per Day</span>
+                                <span class="font-semibold"><span id="detail-tokens-used">0</span>/80,000</span>
+                            </div>
+                            <div class="api-usage-bar bg-gray-200 dark:bg-gray-600">
+                                <div id="detail-tokens-progress" class="usage-progress bg-green-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="usage-card bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-medium text-gray-700 dark:text-gray-300">Requests per Day (RPD)</span>
+                                <span class="font-semibold"><span id="detail-rpd-used">0</span>/1,400</span>
+                            </div>
+                            <div class="api-usage-bar bg-gray-200 dark:bg-gray-600">
+                                <div id="detail-rpd-progress" class="usage-progress bg-purple-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column: Answer Display -->
+            <div class="lg:col-span-7">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-all duration-300">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-white">Generated Answer</h2>
+                        <div class="flex space-x-2">
+                            <button id="copy-btn" class="action-btn bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button id="regenerate-btn" class="action-btn bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <button class="action-btn bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Answer Canvas -->
+                    <div class="answer-canvas bg-gray-50 dark:bg-gray-700/30 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                        <div id="answer-content" class="markdown-content text-gray-700 dark:text-gray-300">
+                            <div class="text-center py-12">
+                                <div class="inline-block p-4 bg-primary-100 dark:bg-primary-900/30 rounded-full mb-4">
+                                    <i class="fas fa-robot text-primary-600 dark:text-primary-400 text-3xl"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">Your AI-Generated Answer</h3>
+                                <p class="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+                                    Enter a question and select the mark format to generate a structured academic answer powered by Gemini Flash 2.0 AI.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Mid-Answer Ad -->
+                    <div class="mt-6">
+                        <div class="ad-container h-32">
+                            <p>Mid-Answer Advertisement (Responsive)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Floating Action Buttons -->
+    <div class="fixed bottom-6 right-6 flex flex-col space-y-4">
+        <button id="floating-copy" class="floating-btn w-12 h-12 rounded-full bg-primary-600 text-white flex items-center justify-center shadow-lg">
+            <i class="fas fa-copy"></i>
+        </button>
+        <button id="floating-regenerate" class="floating-btn w-12 h-12 rounded-full bg-green-600 text-white flex items-center justify-center shadow-lg">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+    </div>
+    
+    <!-- Sticky Bottom Ad (Mobile Only) -->
+    <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-3 px-4">
+        <div class="ad-container h-16">
+            <p>Mobile Sticky Banner (320x50)</p>
+        </div>
+    </div>
+    
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+        });
+        
+        // Set initial theme
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        
+        // API Usage Tracking
+        const apiLimits = {
+            rpm: 28,
+            tokensPerDay: 80000,
+            rpd: 1400
+        };
+        
+        let apiUsage = {
+            rpmCount: 0,
+            tokensUsed: 0,
+            rpdCount: 0
+        };
+        
+        // Update API usage display
+        function updateApiUsageDisplay() {
+            // Calculate percentages
+            const rpmPercent = Math.min(100, (apiUsage.rpmCount / apiLimits.rpm) * 100);
+            const tokensPercent = Math.min(100, (apiUsage.tokensUsed / apiLimits.tokensPerDay) * 100);
+            const rpdPercent = Math.min(100, (apiUsage.rpdCount / apiLimits.rpd) * 100);
+            
+            // Update status bar
+            document.getElementById('rpm-used').textContent = apiUsage.rpmCount;
+            document.getElementById('tokens-used').textContent = apiUsage.tokensUsed.toLocaleString();
+            document.getElementById('rpd-used').textContent = apiUsage.rpdCount;
+            
+            document.getElementById('rpm-progress').style.width = `${rpmPercent}%`;
+            document.getElementById('tokens-progress').style.width = `${tokensPercent}%`;
+            document.getElementById('rpd-progress').style.width = `${rpdPercent}%`;
+            
+            // Update detailed usage
+            document.getElementById('detail-rpm-used').textContent = apiUsage.rpmCount;
+            document.getElementById('detail-tokens-used').textContent = apiUsage.tokensUsed.toLocaleString();
+            document.getElementById('detail-rpd-used').textContent = apiUsage.rpdCount;
+            
+            document.getElementById('detail-rpm-progress').style.width = `${rpmPercent}%`;
+            document.getElementById('detail-tokens-progress').style.width = `${tokensPercent}%`;
+            document.getElementById('detail-rpd-progress').style.width = `${rpdPercent}%`;
+            
+            // Check if limits are reached
+            if (apiUsage.rpmCount >= apiLimits.rpm) {
+                document.getElementById('rpm-progress').classList.add('bg-red-500');
+            } else {
+                document.getElementById('rpm-progress').classList.remove('bg-red-500');
+            }
+            
+            if (apiUsage.tokensUsed >= apiLimits.tokensPerDay) {
+                document.getElementById('tokens-progress').classList.add('bg-red-500');
+            } else {
+                document.getElementById('tokens-progress').classList.remove('bg-red-500');
+            }
+            
+            if (apiUsage.rpdCount >= apiLimits.rpd) {
+                document.getElementById('rpd-progress').classList.add('bg-red-500');
+            } else {
+                document.getElementById('rpd-progress').classList.remove('bg-red-500');
+            }
+        }
+        
+        // Reset RPM counter every minute
+        setInterval(() => {
+            apiUsage.rpmCount = 0;
+            updateApiUsageDisplay();
+        }, 60000);
+        
+        // Mark Option Selection
+        const markOptions = document.querySelectorAll('.mark-option');
+        markOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                markOptions.forEach(btn => {
+                    btn.classList.remove('border-primary-500', 'bg-primary-50', 'dark:bg-gray-700');
+                    btn.classList.add('border-gray-300', 'dark:border-gray-600');
+                });
+                option.classList.add('border-primary-500', 'bg-primary-50', 'dark:bg-gray-700');
+                option.classList.remove('border-gray-300', 'dark:border-gray-600');
+            });
+        });
+        
+        // Format text with bold for **text** patterns
+        function formatAnswer(text, markType) {
+            // Replace **text** with <strong>text</strong>
+            const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Split into paragraphs
+            const paragraphs = formattedText.split('\n\n');
+            
+            let htmlContent = `<h2 class="text-xl font-semibold mb-4">Generated Answer</h2>`;
+            
+            // Add key points section for longer answers
+            if (markType !== "2") {
+                htmlContent += `
+                    <div class="key-point">
+                        <p><strong>Key Insights:</strong> This ${markType}-mark answer provides a comprehensive analysis structured with clear sections and supporting details.</p>
+                    </div>
+                `;
+            }
+            
+            // Convert paragraphs to HTML
+            paragraphs.forEach(para => {
+                if (para.trim().startsWith('* ')) {
+                    // It's a list
+                    const listItems = para.split('\n').map(item => item.replace('* ', '').trim());
+                    htmlContent += '<ul class="mt-2 mb-3">';
+                    listItems.forEach(item => {
+                        if (item) htmlContent += `<li class="mb-1">${item}</li>`;
+                    });
+                    htmlContent += '</ul>';
+                } else if (para.startsWith('## ')) {
+                    // Subheading
+                    htmlContent += `<h3 class="font-semibold mt-4 mb-2">${para.replace('## ', '')}</h3>`;
+                } else if (para.startsWith('# ')) {
+                    // Heading
+                    htmlContent += `<h2 class="text-lg font-semibold mt-6 mb-3">${para.replace('# ', '')}</h2>`;
+                } else {
+                    // Regular paragraph
+                    htmlContent += `<p class="mb-3">${para}</p>`;
+                }
+            });
+            
+            // Add Gemini badge
+            htmlContent += `
+                <div class="mt-6 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                    <i class="fas fa-bolt mr-2 text-yellow-500"></i>
+                    <span>Generated by Gemini Flash 2.0 AI • ${markType}-mark answer format</span>
+                </div>
+            `;
+            
+            return htmlContent;
+        }
+        
+                  // Gemini API Integration
+const GEMINI_API_KEY = "AIzaSyDkbEjn21-DvyI795K4fR1N5irLt1Is2H0"; // Replace with your actual API key
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent";
+
+async function callGeminiAPI(question, markType) {
+    // Update API usage counters immediately
+    apiUsage.rpmCount++;
+    apiUsage.rpdCount++;
+    
+    // Determine token output based on mark type
+    const outputTokens = markType === "2" ? 300 : markType === "13" ? 800 : 1200;
+    
+    // Construct the formatted prompt for Anna University answers
+    const systemPrompt = `
+    **Generate a comprehensive academic answer suitable for Anna University examinations.** 
+
+    **Formatting Requirements:**
+    1. Use **bold** for key terms and concepts
+    2. Use ## for section headings
+    3. Structure based on mark weightage (${markType} marks)
+    4. Include examples where relevant
+    5. Use bullet points for lists
+    6. Add diagrams in code format when applicable (\`\`\` diagram description \`\`\`)
+
+    **Answer Structure Guidelines:
+    ${markType === "2" ? `
+    **For 2-mark answers:**
+    - Concise definition (1-2 sentences)
+    - **Key characteristic** (1 point)
+    ` : markType === "13" ? `
+    **For 13-mark answers:**
+    > Definition
+    - Brief context (2-3 sentences)
+
+    > Key insights - 5 Points
+    - Overview of main content
+    - 3-5 key points with examples
+    - Mathematical representation if applicable
+
+    > Main Content
+    - **Core concept** explanation
+    - **detailed topics**
+    > Conclusion 
+    - Summary (2-3 sentences)
+    ` : `
+    **For 15-mark answers:**
+    > Definition
+    - 4-5 sentences 
+    - **Key pioneers**
+
+    > Theoretical Framework 
+    - Formal definitions
+    - **key insights** and points
+    - Equations/formulas (if applicable)
+
+    > Detailed Explanation
+    - Step-by-step breakdown
+    - **Important concepts** in bold
+    - Diagram descriptions where needed
+    > Advantages and Disadvantages 
+    - each 4 points
+
+    > Applications
+    - Real-world use cases
+    - Industry examples
+
+    > Conclusion and Future Scope
+    - Summary of key points
+    
+    `}
+
+    **Additional Requirements:**
+    - Use formal academic language
+    - Include references to standard textbooks when possible
+    - Highlight **important formulas** in bold
+    - Maintain clarity and precision
+    `;
+
+    const requestBody = {
+        contents: [{
+            parts: [
+                { text: systemPrompt },
+                { text: `**Current Question:** "${question}"` },
+                { text: `**Mark Weightage:** ${markType} marks` }
+            ]
+        }],
+        generationConfig: {
+            temperature: 0.7,
+            topP: 0.9,
+            topK: 40,
+            maxOutputTokens: outputTokens
+        },
+        safetySettings: [
+            {
+                category: "HARM_CATEGORY_HARASSMENT",
+                threshold: "BLOCK_ONLY_HIGH"
+            },
+            {
+                category: "HARM_CATEGORY_HATE_SPEECH",
+                threshold: "BLOCK_ONLY_HIGH"
+            }
+        ]
+    };
+    
+    try {
+        const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`API request failed with status ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Estimate token usage (input + output)
+        const inputTokens = Math.ceil((systemPrompt.length + question.length) / 4);
+        const totalTokens = inputTokens + outputTokens;
+        apiUsage.tokensUsed += totalTokens;
+        
+        updateApiUsageDisplay();
+        
+        if (!data.candidates || !data.candidates[0].content.parts[0].text) {
+            throw new Error("Invalid response format from API");
+        }
+        
+        return data.candidates[0].content.parts[0].text;
+        
+    } catch (error) {
+        // Rollback counters on error
+        apiUsage.rpmCount--;
+        apiUsage.rpdCount--;
+        apiUsage.tokensUsed -= outputTokens;
+        updateApiUsageDisplay();
+        
+        console.error("Error calling Gemini API:", error);
+        throw error;
+    }
+
+      
+            // Update usage display
+            updateApiUsageDisplay();
+            
+        
+            
+            return responses[markType] || responses["15"];
+        }
+        
+        // Generate Button with Ripple Effect
+        const generateBtn = document.getElementById('generate-btn');
+        generateBtn.addEventListener('click', async function(e) {
+            const question = document.getElementById('question-input').value.trim();
+            
+            if (!question) {
+                alert('Please enter a question');
+                return;
+            }
+            
+            // Check API limits
+            if (apiUsage.rpmCount >= apiLimits.rpm) {
+                alert('API limit reached: Maximum requests per minute exceeded. Please try again in a minute.');
+                return;
+            }
+            
+            if (apiUsage.rpdCount >= apiLimits.rpd) {
+                alert('API limit reached: Maximum daily requests exceeded.');
+                return;
+            }
+            
+            if (apiUsage.tokensUsed >= apiLimits.tokensPerDay) {
+                alert('API limit reached: Daily token limit exceeded.');
+                return;
+            }
+            
+            // Show loading state
+            document.getElementById('loading-spinner').classList.remove('hidden');
+            document.getElementById('generate-text').textContent = 'Generating...';
+            generateBtn.disabled = true;
+            
+            // Create ripple effect
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple-effect');
+            ripple.style.left = (e.offsetX) + 'px';
+            ripple.style.top = (e.offsetY) + 'px';
+            this.appendChild(ripple);
+            
+            // Remove ripple after animation
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+            
+            // Get selected mark type
+            const selectedMark = document.querySelector('.mark-option.border-primary-500').dataset.mark;
+            
+            try {
+                // Show typing indicator
+                document.getElementById('answer-content').innerHTML = `
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <span class="ml-3 text-gray-600 dark:text-gray-400">Gemini is generating your answer...</span>
+                    </div>
+                `;
+                
+                // Scroll to answer
+                document.querySelector('.answer-canvas').scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Call Gemini API
+                const response = await callGeminiAPI(question, selectedMark);
+                
+                // Format the response with bold text
+                const formattedAnswer = formatAnswer(response, selectedMark);
+                
+                // Display the answer
+                document.getElementById('answer-content').innerHTML = formattedAnswer;
+            } catch (error) {
+                console.error("Error generating answer:", error);
+                document.getElementById('answer-content').innerHTML = `
+                    <div class="text-center py-12 text-red-500">
+                        <i class="fas fa-exclamation-triangle text-3xl mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2">Error Generating Answer</h3>
+                        <p>${error.message || 'Failed to generate answer. Please try again.'}</p>
+                        <button id="retry-btn" class="mt-4 py-2 px-4 bg-primary-600 text-white rounded-lg">Retry</button>
+                    </div>
+                `;
+                
+                document.getElementById('retry-btn').addEventListener('click', () => {
+                    generateBtn.click();
+                });
+            } finally {
+                // Reset button
+                document.getElementById('loading-spinner').classList.add('hidden');
+                document.getElementById('generate-text').textContent = 'Generate Answer';
+                generateBtn.disabled = false;
+            }
+        });
+        
+        // Copy Answer Functionality
+        function copyAnswer() {
+            const answerContent = document.getElementById('answer-content');
+            const textToCopy = answerContent.innerText;
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // Show copied feedback
+                const copyBtn = document.getElementById('copy-btn');
+                copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                copyBtn.classList.add('bg-green-100', 'text-green-700', 'dark:bg-green-800/30', 'dark:text-green-400');
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                    copyBtn.classList.remove('bg-green-100', 'text-green-700', 'dark:bg-green-800/30', 'dark:text-green-400');
+                }, 2000);
+            });
+        }
+        
+        // Setup copy buttons
+        document.getElementById('copy-btn').addEventListener('click', copyAnswer);
+        document.getElementById('floating-copy').addEventListener('click', copyAnswer);
+        
+        // Regenerate functionality
+        document.getElementById('regenerate-btn').addEventListener('click', () => {
+            generateBtn.click();
+        });
+        
+        document.getElementById('floating-regenerate').addEventListener('click', () => {
+            generateBtn.click();
+        });
+        
+        // Action Buttons
+        document.querySelectorAll('.action-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                button.classList.add('animate-pulse');
+                setTimeout(() => {
+                    button.classList.remove('animate-pulse');
+                }, 300);
+            });
+        });
+        
+        // Sample questions for demonstration
+        const sampleQuestions = [
+            "Explain the concept of object-oriented programming",
+            "Describe the water cycle and its importance to Earth's ecosystems",
+            "Discuss the causes and effects of the Industrial Revolution"
+        ];
+        
+        // Set a sample question for demo
+        document.getElementById('question-input').value = sampleQuestions[Math.floor(Math.random() * sampleQuestions.length)];
+        
+        // Initialize API usage display
+        updateApiUsageDisplay();
+    </script>
+</body>
+</html>
