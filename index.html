@@ -585,49 +585,55 @@ async function callGeminiAPI(question, markType) {
     apiUsage.rpdCount++;
     
     // Determine token output based on mark type
-    const outputTokens = markType === "2" ? 300 : markType === "13" ? 800 : 1200;
+    const outputTokens = markType === "2" ? 300 : markType === "13" ? 1200 : markType === "15" ? 1500;
     
     // Construct the formatted prompt for Anna University answers
     const systemPrompt = `
     You are an expert assistant for Anna University students. Generate comprehensive, well‑structured answers tailored to the specified mark format.
+	markType === "2
+	Please provide a concise answer suitable for a 2-mark question with these requirements:
+	- **Key Insights**: Focus on the most critical 1-2 concepts
+	- **Essential Points**: Maximum 2-3 sentences with precise definitions
+	- **Format**: Direct, to-the-point explanation
+	- **Content**: Include key terms, definitions, and core concepts
+	- **Structure**: Brief but complete answer that covers the question fully
 
-When the question is a **2‑mark** question:
-- > **Key Insight**
-  - Focus on the most critical 1–2 concepts.
-- Provide a **precise definition** in 2–3 sentences.
-- Use **bold** for key terms.
-- Maintain a **direct, to‑the‑point** explanation covering core ideas needed to score full marks.
+	Ensure the answer contains the most important information a student needs to score full marks.
 
-When the question is a **13‑mark** question:
-- > **Introduction**
-  - Brief overview (2–3 sentences).
-- > **Key Insights** (4–5 major points)
-  - Present subheadings, concise explanations, and relevant examples.
-- > **Main Content**
-  - Detailed step‑by‑step explanation; include practical applications.
-- > **Critical Elements**
-  - Advantages and disadvantages.
-- > **Conclusion**
-  - Summarize major takeaways.
-- Use headings, sub‑headings, bullet points, and suggest diagrams or flowcharts.
+Answer:`;.
 
-When the question is a **15‑mark** question:
-- > **Definition & Pioneers**
-  - Detailed 4–5 sentences; mention any **key pioneers**.
-- > **Overview**
-  - Formal definitions, **key insights**, and **equations/formulas** (bolded).
-- > **Detailed Explanation**
-  - Step‑by‑step breakdown; use headings, bold important concepts; include ASCII diagrams.
-- > **Advantages vs Disadvantages** (4 points each)
-- > **Applications**
-  - Real‑world examples and industry use‑cases.
-- > **Conclusion & Future Scope**
-  - Summarize key points and suggest directions for future study or application.
-- Maintain **formal academic tone**, highlight **important formulas**, and ensure clarity and exam‑style precision.
+	markType === "13"
+	Please provide a detailed answer suitable for a 13-mark question with these requirements:
+	- **Key Insights**: Identify and explain 4-5 major concepts or points
+	- **Essential Points**: Include introduction, main content with subheadings, and conclusion
+	- **Structure**: Use proper headings, bullet points, and clear organization
+	- **Content**: Step-by-step explanations, relevant examples, and practical applications
+	- **Critical Elements**: Include advantages, disadvantages, and real-world relevance
+	- **Visual Aids**: Suggest diagrams or flowcharts where applicable
+	- **Anna University Standards**: Follow exam pattern and marking scheme
 
-Always adhere to Anna University’s exam pattern and marking scheme :contentReference[oaicite:1]{index=1}.
+	Focus on providing comprehensive coverage while highlighting the most important aspects that examiners look for.
 
-    `;
+Answer:`;
+
+	markType === "15"
+	Please provide a comprehensive answer suitable for a 15-mark question with these requirements:
+	- **Key Insights**: Develop 6-8 major concepts with deep analysis
+	- **Essential Points**: Detailed introduction, multiple well-structured sections, comprehensive conclusion
+	- **Structure**: Clear headings, subheadings, numbered points, and logical flow
+	- **Content**: In-depth explanations, multiple examples, case studies, and comparative analysis
+	- **Critical Analysis**: Include advantages, disadvantages, applications, limitations, and future scope
+	- **Technical Details**: Mathematical formulations, algorithms, or technical specifications where relevant
+	- **Visual Elements**: Suggest multiple diagrams, flowcharts, tables, or graphs
+	- **Real-world Application**: Include industry examples, current trends, and practical implementations
+	- **Conclusion**: Summarize key takeaways and important points for easy revision
+
+	Provide university-level depth while ensuring all critical points are covered for maximum marks.
+
+
+	Always adhere to Anna University’s exam pattern and marking scheme :contentReference[oaicite:1]{index=1}.
+
+Answer: `;
 
     const requestBody = {
         contents: [{
