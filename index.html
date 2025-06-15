@@ -585,16 +585,15 @@ async function callGeminiAPI(question, markType) {
     apiUsage.rpdCount++;
     
     // Determine token output based on mark type
-    const outputTokens = markType === "2" ? 300 : markType === "13" ? 800 : 1200;
+    const outputTokens = markType === "2" ? 300 : markType === "13" ? 1200 : 1500;
     
     // Base prompt structure for Anna University
-    const basePrompt = `You are an expert assistant for Anna University students. Generate a comprehensive, well-structured answer with key insights and essential points for the following question in the ${markType}-mark format.`;
+    const basePrompt = `You are an expert assistant for Anna University students. Generate comprehensive, well‑structured answers tailored to the specified mark format.`;
     
     // Mark-specific prompts
     let markSpecificPrompt = '';
-    switch(markType) {
-        case "2":
-            markSpecificPrompt = `
+    if (markType === "2") {
+        markSpecificPrompt = `
 Please provide a concise answer suitable for a 2-mark question with these requirements:
 - **Key Insights**: Focus on the most critical 1-2 concepts
 - **Essential Points**: Maximum 2-3 sentences with precise definitions
@@ -603,9 +602,8 @@ Please provide a concise answer suitable for a 2-mark question with these requir
 - **Structure**: Brief but complete answer that covers the question fully
 
 Ensure the answer contains the most important information a student needs to score full marks.`;
-            break;
-        case "13":
-            markSpecificPrompt = `
+    } else if (markType === "13") {
+        markSpecificPrompt = `
 Please provide a detailed answer suitable for a 13-mark question with these requirements:
 - **Key Insights**: Identify and explain 4-5 major concepts or points
 - **Essential Points**: Include introduction, main content with subheadings, and conclusion
@@ -616,9 +614,8 @@ Please provide a detailed answer suitable for a 13-mark question with these requ
 - **Anna University Standards**: Follow exam pattern and marking scheme
 
 Focus on providing comprehensive coverage while highlighting the most important aspects that examiners look for.`;
-            break;
-        case "15":
-            markSpecificPrompt = `
+    } else if (markType === "15") {
+        markSpecificPrompt = `
 Please provide a comprehensive answer suitable for a 15-mark question with these requirements:
 - **Key Insights**: Develop 6-8 major concepts with deep analysis
 - **Essential Points**: Detailed introduction, multiple well-structured sections, comprehensive conclusion
@@ -631,7 +628,6 @@ Please provide a comprehensive answer suitable for a 15-mark question with these
 - **Conclusion**: Summarize key takeaways and important points for easy revision
 
 Provide university-level depth while ensuring all critical points are covered for maximum marks.`;
-            break;
     }
 
     const systemPrompt = `${basePrompt}
