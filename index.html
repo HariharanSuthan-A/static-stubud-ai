@@ -589,66 +589,44 @@ async function callGeminiAPI(question, markType) {
     
     // Construct the formatted prompt for Anna University answers
     const systemPrompt = `
-    **Generate a comprehensive academic answer suitable for Anna University examinations.** 
+    You are an expert assistant for Anna University students. Generate comprehensive, well‑structured answers tailored to the specified mark format.
 
-    **Formatting Requirements:**
-    1. Use **bold** for key terms and concepts
-    2. Use > for section headings
-    3. Structure based on mark weightage (${markType} marks)
-    4. Include examples where relevant
-    5. Use bullet points for lists
-    6. Add diagrams in code format when applicable (\`\`\` diagram description \`\`\`)
+When the question is a **2‑mark** question:
+- > **Key Insight**
+  - Focus on the most critical 1–2 concepts.
+- Provide a **precise definition** in 2–3 sentences.
+- Use **bold** for key terms.
+- Maintain a **direct, to‑the‑point** explanation covering core ideas needed to score full marks.
 
-    **Answer Structure Guidelines:
-    ${markType === "2" ? `
-    **For 2-mark answers:**
-    - definition (1-2 sentences)
-    ` : markType === "13" ? `
-    **For 13-mark answers:**
-    > Definition
-    - Brief context (2-3 sentences)
+When the question is a **13‑mark** question:
+- > **Introduction**
+  - Brief overview (2–3 sentences).
+- > **Key Insights** (4–5 major points)
+  - Present subheadings, concise explanations, and relevant examples.
+- > **Main Content**
+  - Detailed step‑by‑step explanation; include practical applications.
+- > **Critical Elements**
+  - Advantages and disadvantages.
+- > **Conclusion**
+  - Summarize major takeaways.
+- Use headings, sub‑headings, bullet points, and suggest diagrams or flowcharts.
 
-    > Key insights - 5 Points
-    - Overview of main content
-    - 3-5 key points with examples
-    - Mathematical representation if applicable
+When the question is a **15‑mark** question:
+- > **Definition & Pioneers**
+  - Detailed 4–5 sentences; mention any **key pioneers**.
+- > **Overview**
+  - Formal definitions, **key insights**, and **equations/formulas** (bolded).
+- > **Detailed Explanation**
+  - Step‑by‑step breakdown; use headings, bold important concepts; include ASCII diagrams.
+- > **Advantages vs Disadvantages** (4 points each)
+- > **Applications**
+  - Real‑world examples and industry use‑cases.
+- > **Conclusion & Future Scope**
+  - Summarize key points and suggest directions for future study or application.
+- Maintain **formal academic tone**, highlight **important formulas**, and ensure clarity and exam‑style precision.
 
-    > Main Content
-    - **Core concept** explanation
-    - **detailed topics**
-    > Advantages
-    - (2-3 points)
-    ` : `
-    **For 15-mark answers:**
-    > Definition
-    - 4-5 sentences 
-    - **Key pioneers**
+Always adhere to Anna University’s exam pattern and marking scheme :contentReference[oaicite:1]{index=1}.
 
-    > Overview 
-    - Formal definitions
-    - **key insights** and points
-    - Equations/formulas (if applicable)
-
-    > Detailed Explanation
-    - Step-by-step breakdown
-    - **Important concepts** in bold
-    - Diagram descriptions where needed
-    > Advantages and Disadvantages 
-    - each 4 points
-
-    > Applications
-    - Real-world use cases
-    - Industry examples
-
-    > Conclusion and Future Scope
-    - Summary of key points
-    
-    `}
-
-    **Additional Requirements:**
-    - Use formal academic language
-    - Highlight **important formulas** in bold
-    - Maintain clarity and precision
     `;
 
     const requestBody = {
