@@ -593,7 +593,7 @@ async function callGeminiAPI(question, markType) {
 
     **Formatting Requirements:**
     1. Use **bold** for key terms and concepts
-    2. Use ## for section headings
+    2. Use > for section headings
     3. Structure based on mark weightage (${markType} marks)
     4. Include examples where relevant
     5. Use bullet points for lists
@@ -602,8 +602,7 @@ async function callGeminiAPI(question, markType) {
     **Answer Structure Guidelines:
     ${markType === "2" ? `
     **For 2-mark answers:**
-    - Concise definition (1-2 sentences)
-    - **Key characteristic** (1 point)
+    - definition (1-2 sentences)
     ` : markType === "13" ? `
     **For 13-mark answers:**
     > Definition
@@ -617,15 +616,15 @@ async function callGeminiAPI(question, markType) {
     > Main Content
     - **Core concept** explanation
     - **detailed topics**
-    > Conclusion 
-    - Summary (2-3 sentences)
+    > Advantages
+    - (2-3 points)
     ` : `
     **For 15-mark answers:**
     > Definition
     - 4-5 sentences 
     - **Key pioneers**
 
-    > Theoretical Framework 
+    > Overview 
     - Formal definitions
     - **key insights** and points
     - Equations/formulas (if applicable)
@@ -648,7 +647,6 @@ async function callGeminiAPI(question, markType) {
 
     **Additional Requirements:**
     - Use formal academic language
-    - Include references to standard textbooks when possible
     - Highlight **important formulas** in bold
     - Maintain clarity and precision
     `;
