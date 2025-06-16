@@ -582,7 +582,7 @@ async function callGeminiAPI(question, markType) {
     apiUsage.rpdCount++;
     
     // Determine token output based on mark type
-    const outputTokens = markType === "2" ? 300 : markType === "13" ? 1200 : 1400 : markType === "15" ? 1200 : 1500;
+    const outputTokens = markType === "2" ? 300 : markType === "13" ? 1400 : 1600;
     
     // Construct the formatted prompt for Anna University answers
     const systemPrompt = `
