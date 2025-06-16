@@ -241,7 +241,7 @@
             </button>
         </div>
     </nav>
-	<script type="text/javascript">
+<script type="text/javascript">
 	atOptions = {
 		'key' : 'd8bea8451401584871ddbc3a4a80e1c6',
 		'format' : 'iframe',
@@ -251,7 +251,6 @@
 	};
 </script>
 <script type="text/javascript" src="//www.highperformanceformat.com/d8bea8451401584871ddbc3a4a80e1c6/invoke.js"></script>
-
     <!-- API Usage Status Bar -->
     <div class="bg-gradient-to-r from-gemini-100 to-gemini-200 dark:from-gemini-800 dark:to-gemini-900 px-4 py-2">
         <div class="container mx-auto">
@@ -293,6 +292,7 @@
             </div>
         </div>
     </div>
+
  
 
     <main class="container mx-auto px-4 py-6">
@@ -582,7 +582,7 @@ async function callGeminiAPI(question, markType) {
     apiUsage.rpdCount++;
     
     // Determine token output based on mark type
-    const outputTokens = markType === "2" ? 300 : markType === "13" ? 1400 : 1600;
+    const outputTokens = markType === "2" ? 300 : markType === "13" ? 1200 : 1500;
     
     // Construct the formatted prompt for Anna University answers
     const systemPrompt = `
@@ -617,7 +617,7 @@ async function callGeminiAPI(question, markType) {
     > Conclusion 
     - Summary (2-3 sentences)
     ` : `
-    ` : markType === "15" ? `
+    **For 15-mark answers:**
     > Definition
     - 4-5 sentences 
     - **Key pioneers**
@@ -634,6 +634,7 @@ async function callGeminiAPI(question, markType) {
     > Advantages - - each 4 points
     > Disadvantages 
     
+
     > Applications
     - Real-world use cases
     - Industry examples
@@ -856,8 +857,9 @@ async function callGeminiAPI(question, markType) {
         
         // Sample questions for demonstration
         const sampleQuestions = [
-            "Enter your question here..."
-            
+            "Explain the concept of object-oriented programming",
+            "Describe the water cycle and its importance to Earth's ecosystems",
+            "Discuss the causes and effects of the Industrial Revolution"
         ];
         
         // Set a sample question for demo
@@ -868,14 +870,13 @@ async function callGeminiAPI(question, markType) {
     </script>
 <script type="text/javascript">
 	atOptions = {
-		'key' : 'de614fcb3f8e30286e314e59d5b63050',
+		'key' : 'd8bea8451401584871ddbc3a4a80e1c6',
 		'format' : 'iframe',
-		'height' : 90,
-		'width' : 728,
+		'height' : 50,
+		'width' : 320,
 		'params' : {}
 	};
 </script>
-<script type="text/javascript" src="//www.highperformanceformat.com/de614fcb3f8e30286e314e59d5b63050/invoke.js"></script>
+<script type="text/javascript" src="//www.highperformanceformat.com/d8bea8451401584871ddbc3a4a80e1c6/invoke.js"></script>
 </body>
-<script type='text/javascript' src='//pl26922344.profitableratecpm.com/e5/38/40/e538400c4d66baa936009527ced33fd1.js'></script>
 </html>
